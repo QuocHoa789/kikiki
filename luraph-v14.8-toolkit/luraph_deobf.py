@@ -569,6 +569,92 @@ def _cmd_unpack(args):
                       f"(encrypted blob or different variant)")
 
 
+def _cmd_devirt(args):
+    """Full analysis report: detect + blobs + typed constants + structure.
+
+    This is IR/bytecode-walking level recovery: it recovers everything that
+    is statically stable (version, style, blobs, all string constants,
+    VM structure fingerprint) and reports layered/encrypted blobs. Full
+    source reconstruction from the VM bytecode (SoA instruction arrays,
+    polymorphic IR, runtime patching) is not included -- see README.
+    """
+    for path in args.files:
+        with open(path, "r", encoding="utf-8", errors="replace") as f:
+            data = f.read()
+        base = os.path.splitext(os.path.basename(path))[0]
+        version, style, _ = detect(path)
+        stats = vm_stats(path)
+        blobs = extract_lph_blobs(data)
+
+        lines = []
+        lines.append("=" * 62)
+        lines.append(f"LURAPH DEOBFUSCATION REPORT: {os.path.basename(path)}")
+        lines.append("=" * 62)
+        lines.append(f"version       : Luraph v{version}")
+        lines.append(f"style         : {style}")
+        lines.append(f"file size     : {stats['size']:,}B")
+        lines.append(f"VM entry      : :{stats['entry']}(...)")
+        lines.append(f"VM func fields: {stats['func_fields']}")
+        lines.append(f"bit32/buffer/coroutine refs: "
+                     f"{stats['bit32_refs']}/{stats['buffer_refs']}/{stats['coroutine_refs']}")
+        lines.append(f"number literals: {stats['number_literals']:,}")
+        lines.append("")
+
+        lines.append(f"--- serialized blobs ({len(blobs)}) ---")
+        for i, (lvl, off, content) in enumerate(blobs):
+            raw = decode_blob(content)
+            printable = sum(1 for b in raw if 32 <= b < 127 or b in (9, 10, 13))
+            ratio = printable / max(1, len(raw))
+            state = "structured (parseable)" if ratio > 0.75 else \
+                "high-entropy (encrypted layer)"
+            lines.append(f"  blob[{i}] level={lvl} sig={content[:4]!r} "
+                         f"encoded={len(content):,}B decoded={len(raw):,}B -> {state}")
+        lines.append("")
+
+        ss, infos = extract_strings(path, include_vm_strings=True)
+        vm_strs = [s for s in ss if _is_vm_string(s)]
+        app_strs = [s for s in ss if not _is_vm_string(s)]
+        lines.append(f"--- string constants: {len(ss)} total "
+                     f"({len(app_strs)} application, {len(vm_strs)} VM-internal) ---")
+        if app_strs:
+            lines.append("  application strings (used by the original script):")
+            for s in app_strs:
+                t = s.decode("utf-8", "replace")
+                if len(t) > 100:
+                    t = t[:97] + "..."
+                lines.append(f"    {t!r}")
+        if args.show_vm_strings and vm_strs:
+            lines.append("  VM-internal strings (stdlib refs, errors, banner):")
+            for s in vm_strs:
+                t = s.decode("utf-8", "replace")
+                if len(t) > 100:
+                    t = t[:97] + "..."
+                lines.append(f"    {t!r}")
+        lines.append("")
+
+        lines.append("--- interpretation ---")
+        interesting = [s.decode("utf-8", "replace") for s in app_strs
+                       if any(x in s.lower() for x in
+                              (b"game:", b"service", b"player", b"http", b"url",
+                               b"discord", b"webhook", b"loadstring", b"executor",
+                               b"getgenv", b"hook", b"teleport", b"farm", b"key"))]
+        if interesting:
+            lines.append("  notable strings (services / networking / executors):")
+            for t in interesting[:20]:
+                lines.append(f"    {t[:97]!r}")
+        else:
+            lines.append("  (no obvious service/network strings recovered)")
+        lines.append("")
+        report = "\n".join(lines)
+
+        if args.output:
+            with open(args.output, "w", encoding="utf-8") as f:
+                f.write(report + "\n")
+            print(f"report -> {args.output}")
+        else:
+            print(report)
+
+
 def main(argv=None):
     p = argparse.ArgumentParser(
         prog="luraph_deobf",
@@ -604,6 +690,12 @@ def main(argv=None):
     sp.add_argument("-d", "--out-dir",
                     help="write unpacked blobs to this directory")
     sp.set_defaults(fn=_cmd_unpack)
+
+    sp = sub.add_parser("devirt", help="full analysis report (IR level)")
+    sp.add_argument("files", nargs="+")
+    sp.add_argument("-o", "--output")
+    sp.add_argument("--show-vm-strings", action="store_true")
+    sp.set_defaults(fn=_cmd_devirt)
 
     sp = sub.add_parser("all", help="detect + blobs + strings + beautify")
     sp.add_argument("file")
