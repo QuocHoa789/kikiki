@@ -18,6 +18,3 @@ local start = math.max(1, #lookup_log - 39)
 for i = start, #lookup_log do
     log(i .. ": " .. lookup_log[i])
 end
-
--- write trace to stdout (shell redirects to file)
-print(table.concat(trace, "\n"))

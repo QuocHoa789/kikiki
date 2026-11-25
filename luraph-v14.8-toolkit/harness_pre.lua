@@ -32,6 +32,8 @@ end
 
 local function log(line)
     table.insert(trace, string.rep("  ", depth) .. line)
+    -- print immediately so a timeout-kill still captures partial traces
+    print(string.rep("  ", depth) .. line)
 end
 
 -- call-tracing wrapper for stub functions
@@ -188,13 +190,124 @@ local env = {
 -- missing-global tracker: log any lookup that falls through env
 local missing = {}
 local lookup_log = {}
-setmetatable(env, {
-    __index = function(t, k)
-        missing[tostring(k)] = (missing[tostring(k)] or 0) + 1
-        table.insert(lookup_log, tostring(k))
-        return nil
-    end,
-})
+
+-- IR dump: called by injected LPH_DUMP(...) right after deserialization.
+-- Prints a line-based structural dump of every visible table so the
+-- execution data (constants / instruction arrays / prototypes) can be
+-- captured without running the payload.
+local dump_lines = {}
+local dump_seen = {}
+
+local function tkind(v)
+    local t = type(v)
+    if t ~= "table" then return t end
+    local n = 0
+    local numkeys = 0
+    local strkeys = 0
+    for k in pairs(v) do
+        n = n + 1
+        if type(k) == "number" then numkeys = numkeys + 1 end
+        if type(k) == "string" then strkeys = strkeys + 1 end
+        if n > 200 then break end
+    end
+    if numkeys == n and n > 0 then
+        -- homogeneous array detection
+        local allnum, allstr, alltbl = 0, 0, 0
+        local c = 0
+        for i, val in pairs(v) do
+            c = c + 1
+            local vt = type(val)
+            if vt == "number" then allnum = allnum + 1 end
+            if vt == "string" then allstr = allstr + 1 end
+            if vt == "table" then alltbl = alltbl + 1 end
+            if c >= 50 then break end
+        end
+        if c > 0 and allnum == c then return "array:num"
+        elseif c > 0 and allstr == c then return "array:str"
+        elseif c > 0 and alltbl == c then return "array:tbl" end
+        return "array:mixed"
+    end
+    if n == 0 then return "empty" end
+    return "table"
+end
+
+local function dump_table(name, t, depth)
+    if depth > 4 or dump_seen[t] then return end
+    dump_seen[t] = true
+    local kind = tkind(t)
+    table.insert(dump_lines,
+        string.format("T %s %s %d %d", name, kind, depth, #t))
+    if kind == "array:num" then
+        local parts = {}
+        local n = 0
+        local c = 0
+        for i, val in pairs(t) do
+            c = c + 1
+            if c > 120 then table.insert(parts, "...") break end
+            n = n + 1
+            parts[n] = tostring(i) .. ":" .. tostring(val)
+        end
+        table.insert(dump_lines, "V " .. name .. " " .. table.concat(parts, " "))
+    elseif kind == "array:str" then
+        local n = 0
+        for i = 1, math.min(#t, 40) do
+            n = n + 1
+            local s = tostring(t[i])
+            if #s > 90 then s = s:sub(1, 87) .. "..." end
+            table.insert(dump_lines, string.format("S %s %d %s", name, i, s))
+        end
+        if #t > 40 then
+            table.insert(dump_lines, "S " .. name .. " - (+" .. (#t - 40) .. " more)")
+        end
+    elseif kind == "array:tbl" or kind == "array:mixed" or kind == "table" then
+        local c = 0
+        for k, v in pairs(t) do
+            c = c + 1
+            if c > 40 then
+                table.insert(dump_lines, "K " .. name .. " - (more keys)")
+                break
+            end
+            local kt = type(k)
+            if type(v) == "table" then
+                table.insert(dump_lines,
+                    string.format("K %s %s -> %s", name,
+                        kt == "string" and k or ("[" .. tostring(k) .. "]"),
+                        tkind(v)))
+                if depth < 3 and kt ~= "string" or depth < 3 then
+                    dump_table(name .. "." .. tostring(k), v, depth + 1)
+                end
+            else
+                local vs = tostring(v)
+                if #vs > 80 then vs = vs:sub(1, 77) .. "..." end
+                table.insert(dump_lines,
+                    string.format("K %s %s = %s %s", name,
+                        kt == "string" and k or ("[" .. tostring(k) .. "]"),
+                        type(v), vs))
+            end
+        end
+    end
+end
+
+LPH_DUMP = function(...)
+    dump_lines = {}
+    dump_seen = {}
+    for i = 1, select("#", ...) do
+        local name = "arg" .. i
+        local v = (select(i, ...))
+        if type(v) == "table" then
+            dump_table(name, v, 0)
+        else
+            table.insert(dump_lines,
+                "T " .. name .. " " .. type(v) .. " 0 0")
+        end
+    end
+    print("=== LPH_DUMP_BEGIN ===")
+    print(table.concat(dump_lines, "\n"))
+    print("=== LPH_DUMP_END ===")
+end
+
+-- expose the dumper to the protected script's environment
+env.LPH_DUMP = LPH_DUMP
 
 -- full access logger: move every global behind an __index pass-through so
 -- we see the exact lookup sequence (including successful ones)
