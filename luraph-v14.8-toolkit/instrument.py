@@ -111,25 +111,52 @@ def instrument(src: str) -> str:
             region = instrumented[entry_pos:inv.start()]
             if '"' not in region and "'" not in region:
                 # inject only in the chain part (before the interpreter
-                # dispatch loop) to avoid statement-position pitfalls inside
-                # nested if/continue blocks
+                # dispatch loop), and only at top-level statements
+                # (paren/brace/bracket depth zero) — probes placed inside
+                # call arguments produce invalid syntax
                 marker = region.find("while true do")
                 head, tail_part = (region, "") if marker < 0 else \
                     (region[:marker], region[marker:])
                 probe = f";LPH_DUMP({','.join(names)})"
-                out_parts = []
-                for seg in head.split(";"):
-                    out_parts.append(seg)
-                    # skip empty segments (would create invalid `;;`) and
-                    # `break`/`continue`/`return` (must be last in a block)
-                    seg_s = seg.rstrip().lstrip()
-                    if seg_s == "" \
-                            or seg_s.endswith(("break", "continue", "then",
-                                               "do", "else", "repeat")) \
-                            or re.search(r'\breturn\b', seg_s):
+                out = []
+                depth = 0
+                i = 0
+                n = len(head)
+                last_stmt_start = 0
+                while i < n:
+                    c = head[i]
+                    if c == "[":  # long-bracket string
+                        j = i + 1; eq = 0
+                        while j < n and head[j] == "=":
+                            eq += 1; j += 1
+                        if j < n and head[j] == "[":
+                            closer = "]" + "=" * eq + "]"
+                            k = head.find(closer, j + 1)
+                            if k >= 0:
+                                out.append(head[i:k + len(closer)])
+                                i = k + len(closer)
+                                continue
+                    if c in "([{":
+                        depth += 1
+                    elif c in ")]}":
+                        depth -= 1
+                    elif c == ";" and depth == 0:
+                        out.append(c)
+                        # in Luau, break/continue/return must be the LAST
+                        # statement of a block -- no probe after them
+                        stmt = head[last_stmt_start:i].rstrip().lstrip()
+                        if not (stmt.endswith("break")
+                                or stmt.endswith("continue")
+                                or stmt == ""
+                                or stmt.endswith(("then", "do", "else", "repeat"))
+                                or re.search(r'\breturn\b', stmt)):
+                            out.append(probe)
+                        i += 1
+                        last_stmt_start = i
                         continue
-                    out_parts.append(probe)
-                region = ";".join(out_parts) + tail_part
+                    out.append(c)
+                    i += 1
+                region = "".join(out) + tail_part
                 instrumented = instrumented[:entry_pos] + region + \
                     instrumented[inv.start():]
     # normalize double-semicolons outside strings (Luau rejects empty
