@@ -301,6 +301,60 @@ LPH_DUMP = function(...)
                 "T " .. name .. " " .. type(v) .. " 0 0")
         end
     end
+    -- deep-dump the execution-data table: every numeric slot with its
+    -- content type and head values (instruction arrays live here)
+    for i = 1, select("#", ...) do
+        local v = (select(i, ...))
+        if type(v) == "table" then
+            local numeric = 0
+            local total = 0
+            for k in pairs(v) do
+                total = total + 1
+                if type(k) == "number" then numeric = numeric + 1 end
+            end
+            if numeric >= 8 and numeric == total then
+                print("=== DEEPDUMP " .. "arg" .. i .. " (" .. numeric .. " slots) ===")
+                -- iterate with pairs: keys may be sparse
+                local keys = {}
+                for k in pairs(v) do
+                    table.insert(keys, k)
+                end
+                table.sort(keys)
+                for _, k in ipairs(keys) do
+                    local sv = v[k]
+                    local st = type(sv)
+                    if st == "table" then
+                        local kind = tkind(sv)
+                        local ln = #sv
+                        local head = {}
+                        if kind == "array:num" then
+                            for j = 1, math.min(ln, 12) do
+                                head[j] = tostring(sv[j])
+                            end
+                            print(string.format("SLOT %d array:num len=%d [%s]",
+                                k, ln, table.concat(head, " ")))
+                        elseif kind == "array:str" then
+                            for j = 1, math.min(ln, 6) do
+                                local s = tostring(sv[j])
+                                if #s > 40 then s = s:sub(1, 37) .. "..." end
+                                head[j] = string.format("%q", s)
+                            end
+                            print(string.format("SLOT %d array:str len=%d [%s]",
+                                k, ln, table.concat(head, " ")))
+                        elseif kind == "array:tbl" then
+                            print(string.format("SLOT %d array:tbl len=%d", k, ln))
+                        else
+                            print(string.format("SLOT %d %s len=%d", k, kind, ln))
+                        end
+                    else
+                        print(string.format("SLOT %d %s %s", k, st,
+                            tostring(sv):sub(1, 60)))
+                    end
+                end
+                print("=== END DEEPDUMP ===")
+            end
+        end
+    end
     print("=== LPH_DUMP_BEGIN ===")
     print(table.concat(dump_lines, "\n"))
     print("=== LPH_DUMP_END ===")
