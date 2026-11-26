@@ -18,8 +18,8 @@ import sys
 def instrument(src: str) -> str:
     # find the deserializer tail:  X = TBL[IDX](a, TBL2[IDX2])(args...)
     m = re.search(
-        r'(\w+)\s*=\s*(\w+)\[(0[Xx][0-9A-Fa-f_]+|\d+)\]'
-        r'\(\s*(\w+)\s*,\s*(\w+)\[(0[Xx][0-9A-Fa-f_]+|\d+)\]\s*\)\s*\(',
+        r'(\w+)\s*=\s*(\w+)\[(0[Xx][0-9A-Fa-f_]+|0[Bb][01_]+|\d+)\]'
+        r'\(\s*(\w+)\s*,\s*(\w+)\[(0[Xx][0-9A-Fa-f_]+|0[Bb][01_]+|\d+)\]\s*\)\s*\(',
         src,
     )
     if not m:
@@ -83,8 +83,8 @@ def instrument(src: str) -> str:
     # lazy constant decryption happens step by step. All positions are
     # recomputed on the already-replaced text.
     inv = re.search(
-        r'(\w+)\s*=\s*(\w+)\[(0[Xx][0-9A-Fa-f_]+|\d+)\]'
-        r'\(\s*(\w+)\s*,\s*(\w+)\[(0[Xx][0-9A-Fa-f_]+|\d+)\]\s*\)\s*;',
+        r'(\w+)\s*=\s*(\w+)\[(0[Xx][0-9A-Fa-f_]+|0[Bb][01_]+|\d+)\]'
+        r'\(\s*(\w+)\s*,\s*(\w+)\[(0[Xx][0-9A-Fa-f_]+|0[Bb][01_]+|\d+)\]\s*\)\s*;',
         instrumented,
     )
     if inv:
