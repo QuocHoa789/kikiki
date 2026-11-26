@@ -45,6 +45,9 @@ def render(tables):
     out.append("CAPTURED EXECUTION DATA (IR level)")
     out.append("=" * 62)
     for t in tables:
+        # skip nil args (unresolved names from the dump call)
+        if t["kind"] == "nil":
+            continue
         out.append("")
         out.append(f"[{t['name']}] kind={t['kind']} len={t['len']}")
         for a in t["arrays"]:
@@ -54,6 +57,12 @@ def render(tables):
                 out.append(f"  [{a[1]}] {a[2]!r}")
         for f in t["fields"]:
             out.append(f"  {f}")
+        # flag the obfuscation key table (sparse key->seed map)
+        if t["kind"] == "array:num" and t["len"] == 0 and t["arrays"]:
+            out.append("  ^ INTERPRETATION: sparse key->seed map — this is the")
+            out.append("    VM's per-file obfuscation key table (arithmetic")
+            out.append("    bias seeds used by the anti-tamper / constant")
+            out.append("    decryption routines)")
     return "\n".join(out)
 
 
