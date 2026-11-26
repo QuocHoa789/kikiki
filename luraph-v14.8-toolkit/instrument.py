@@ -8,11 +8,22 @@ local, and disables the interpreter invocation. The combined sandbox then
 deserializes fully, dumps the execution-data tables to stdout, and
 returns -- giving a clean IR capture without running the payload.
 
-Usage: python3 instrument.py <protected.lua> <out.lua>
+Usage: python3 instrument.py <protected.lua> <out.lua> [--mode instr]
+Modes:
+  ir    (default) capture execution data after deserialization
+  instr capture the materialized instruction array from the dispatch loop
 """
 
 import re
 import sys
+
+MODE = "ir"
+if "--mode" in sys.argv:
+    i = sys.argv.index("--mode")
+    if i + 1 < len(sys.argv):
+        MODE = sys.argv[i + 1]
+        sys.argv.pop(i)
+        sys.argv.pop(i)
 
 
 def instrument(src: str) -> str:
@@ -69,7 +80,31 @@ def instrument(src: str) -> str:
             break
 
     dump_call = f";LPH_DUMP({','.join(names)})"
-    instrumented = src[:start] + dump_call + src[end:]
+    if MODE == "instr":
+        # dispatch-loop capture mode: leave the interpreter invocation
+        # INTACT so the Real VM runs; LPH_INSTR fires at the first opcode
+        # fetch, dumps the materialized instruction array, then aborts
+        instrumented = src
+    else:
+        instrumented = src[:start] + dump_call + src[end:]
+
+    if MODE == "instr":
+        # inject into the dispatch loop: `repeat local op=(ARR[pc]);` —
+        # the opcode fetch. LPH_INSTR dumps the opcodes array once, then
+        # raises to unwind cleanly (the sandbox catches it).
+        dm = re.search(r'repeat\s+local\s+(\w+)\s*=\s*\(\s*(\w+)\[(\w+)\]\s*\)\s*;',
+                       instrumented)
+        if dm:
+            fetch = dm.group(0)
+            hook = f"repeat LPH_INSTR({dm.group(2)},{dm.group(3)});{fetch[7:]}"
+            instrumented = instrumented[:dm.start()] + hook + \
+                instrumented[dm.end():]
+            print(f"dispatch loop hooked at {dm.start()}: "
+                  f"op={dm.group(1)} arr={dm.group(2)} pc={dm.group(3)}",
+                  file=sys.stderr)
+        else:
+            print("dispatch loop NOT found", file=sys.stderr)
+        return instrumented
 
     # NOTE: the outer tail `}):J()(...)` stays UNTOUCHED. Removing the
     # interpreter's argument list above already prevents the Real VM from

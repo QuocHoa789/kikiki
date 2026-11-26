@@ -363,6 +363,28 @@ end
 -- expose the dumper to the protected script's environment
 env.LPH_DUMP = LPH_DUMP
 
+-- instruction-array capture: called at the first opcode fetch in the VM's
+-- dispatch loop. Dumps the materialized opcodes array once, then raises to
+-- unwind cleanly (the sandbox harness catches the error).
+LPH_INSTR = function(arr, pc)
+    if INSTR_CAPTURED then return end
+    INSTR_CAPTURED = true
+    local n = 0
+    for _ in pairs(arr) do n = n + 1 end
+    print("=== LPH_INSTR_BEGIN n=" .. tostring(n) .. " pc=" .. tostring(pc) .. " ===")
+    local parts = {}
+    local cnt = 0
+    for i = 1, n do
+        cnt = cnt + 1
+        parts[cnt] = tostring(arr[i])
+    end
+    print(table.concat(parts, " "))
+    print("=== LPH_INSTR_END ===")
+    error("LPH_CAPTURE_DONE")
+end
+
+env.LPH_INSTR = LPH_INSTR
+
 -- full access logger: move every global behind an __index pass-through so
 -- we see the exact lookup sequence (including successful ones)
 local real_globals = {}
