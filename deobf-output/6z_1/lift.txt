@@ -1,0 +1,427 @@
+==============================================================
+OPCODE LIFTING REPORT
+==============================================================
+handlers parsed: 99
+semantics recognized: 1/99
+
+--- handler map (opcode range -> semantics) ---
+  [95..179]      ?
+      body: O = z [ F ] ; R = a [ w [ F ] ] ; a [ O + 1 ] = R ; a [ O ] = ( R [ n [ F ] ] ) ;
+  [95..179]      ?
+      body: O = ( Z ) ; R = ( S [ F ] ) ;
+  [95..179]      ?
+      body: ( a ) [ S [ F ] ] = ( K [ 44 ] ( a [ w [ F ] ] , U [ F ] ) ) ;
+  [119..97]      ?
+      body: 
+  [119..97]      ?
+      body: for M , I in t do if M >= 0B1 then ( I ) [ 0X002 ] = I ; ( I ) [ 0X3 ] = ( a [ M ] ) ; ( I ) [ 0B1 ] = 0x3 ; t [ M ] = nil ; end ;
+  [119..97]      ?
+      body: O = a ;
+  [119..98]      ?
+      body: ( a ) [ S [ F ] ] = ( a [ z [ F ] ] - C [ F ] ) ;
+  [119..98]      ?
+      body: F = ( z [ F ] ) ;
+  [119..98]      ?
+      body: a [ w [ F ] ] = K [ 0B101001 ] ;
+  [119..98]      ?
+      body: O = Z [ S [ F ] ] ; O [ 0X2 ] [ O [ 0X1 ] ] = ( a [ z [ F ] ] ) ;
+  [119..103]     ?
+      body: K [ 0B110 ] [ w [ F ] ] = ( a [ S [ F ] ] ) ;
+  [119..103]     FORLOOP/FORPREP
+      body: O = w [ F ] ; R = S [ F ] ; r = ( z [ F ] ) ; if R == 0X0 then else E = O + R - 0X1 ; end ; _ , L = nil ; if R == 0X1 then _ , L =
+  [119..104]     ?
+      body: a [ S [ F ] ] = a [ z [ F ] ] + C [ F ] ;
+  [119..104]     ?
+      body: a [ z [ F ] ] = nil ;
+  [119..104]     ?
+      body: ( a [ z [ F ] ] ) [ n [ F ] ] = C [ F ] ;
+  [119..104]     ?
+      body: O = w [ F ] ; R = S [ F ] ; r = a [ O ] ; ( K [ 0X38 ] ) ( a , O + 0X1 , E , R + 1 , r ) ;
+  [119..108]     ?
+      body: R = U [ F ] ; r = a ; _ = ( S [ F ] ) ;
+  [119..108]     ?
+      body: O = 0x1 ; r = r [ O ] ;
+  [119..108]     ?
+      body: ( a ) [ S [ F ] ] = a [ w [ F ] ] >= a [ z [ F ] ] ;
+  [119..110]     ?
+      body: O = Z [ z [ F ] ] ; a [ w [ F ] ] = O [ 0B10 ] [ O [ 0X1 ] ] [ a [ S [ F ] ] ] ;
+  [119..110]     ?
+      body: O = ( z [ F ] ) ; E = ( O ) ;
+  [119..110]     ?
+      body: O = Z [ w [ F ] ] ; O [ 0B10 ] [ O [ 0x1 ] ] = U [ F ] ;
+  [119..113]     ?
+      body: Q = ( S [ F ] ) ; for M = 1 , Q do ( a ) [ M ] = V [ M ] ; end ; W = Q + 0B1_ ;
+  [119..113]     ?
+      body: ( a [ S [ F ] ] ) [ a [ z [ F ] ] ] = a [ w [ F ] ] ;
+  [119..113]     ?
+      body: O = O [ _ ] ;
+  [119..113]     ?
+      body: _ = ( z [ F ] ) ; r = r [ _ ] ; _ = ( n [ F ] ) ;
+  [119..113]     ?
+      body: O = ( 0x7A ) ; R = 0x0 ; r = 4503599627370495 ; R * = r ; _ = nil ; L = nil ; e = ( 0X74 ) ; repeat if e < 0B1000110 then r = r [ 
+  [131..121]     ?
+      body: O = a ; R = S [ F ] ; r = ( U [ F ] ) ;
+  [131..121]     ?
+      body: ( a ) [ S [ F ] ] = ( a [ z [ F ] ] == a [ w [ F ] ] ) ;
+  [131..122]     ?
+      body: r = { } ;
+  [131..122]     ?
+      body: ( a ) [ z [ F ] ] = a [ S [ F ] ] .. C [ F ] ;
+  [131..122]     ?
+      body: 
+  [131..122]     ?
+      body: F = ( w [ F ] ) ;
+  [131..122]     ?
+      body: ( a ) [ z [ F ] ] = ( a [ S [ F ] ] - a [ w [ F ] ] ) ;
+  [131..125]     ?
+      body: _ = ( C [ F ] ) ; r = ( r [ _ ] ) ; O [ R ] = r ;
+  [131..125]     ?
+      body: O = ( z [ F ] ) ; E = ( O + S [ F ] - 0b1 ) ; ( a ) [ O ] = a [ O ] ( K [ 30 ] ( E , O + 1 , a ) ) ; E = O ;
+  [131..125]     ?
+      body: R = ( n [ F ] ) ; r = a ;
+  [131..125]     ?
+      body: F = ( z [ F ] ) ;
+  [131..125]     ?
+      body: O = ( S [ F ] ) ; a [ O ] ( a [ O + 0X1 ] ) ; E = ( O - 0x1 ) ;
+  [131..125]     ?
+      body: ( a ) [ w [ F ] ] = ( a [ z [ F ] ] * a [ S [ F ] ] ) ;
+  [137..133]     ?
+      body: R [ r ] = ( O ) ;
+  [137..133]     ?
+      body: a [ w [ F ] ] = ( a ) ;
+  [137..134]     ?
+      body: r = r [ _ ] ;
+  [137..134]     ?
+      body: r = 2 ; R = ( R [ r ] ) ;
+  [137..134]     ?
+      body: _ = ( _ [ L ] ) ; r - = _ ; ( O ) [ R ] = ( r ) ;
+  [137..134]     ?
+      body: O = ( K [ 0B110 ] ) ;
+  [140..139]     ?
+      body: 
+  [140..139]     ?
+      body: F = ( S [ F ] ) ;
+  [140..141]     ?
+      body: O = ( a ) ; R = S [ F ] ; r = Z ;
+  [140..141]     ?
+      body: ( a ) [ S [ F ] ] = ( K [ 0B1_0100 ] ( a [ w [ F ] ] , U [ F ] ) ) ;
+  [140..141]     ?
+      body: for M = 1 , S [ F ] do a [ M ] = ( V [ M ] ) ; end ;
+  [140..143]     ?
+      body: R = ( w [ F ] ) ; r = a ;
+  [155..143]     ?
+      body: _ = ( S [ F ] ) ; r = r [ _ ] ;
+  [155..143]     ?
+      body: ( Z [ w [ F ] ] ) [ n [ F ] ] = U [ F ] ;
+  [155..143]     ?
+      body: B = ( i [ 0X3 ] ) ; c = i [ 0X02 ] ; d = i [ 0X5 ] ; i = ( i [ 0B1 ] ) ;
+  [155..143]     ?
+      body: F = S [ F ] ;
+  [155..143]     ?
+      body: R = S [ F ] ;
+  [155..143]     ?
+      body: O = Z [ z [ F ] ] ; O [ 0B10 ] [ O [ 0X01 ] ] [ a [ S [ F ] ] ] = a [ w [ F ] ] ;
+  [155..143]     ?
+      body: O = ( O [ R ] ) ; R = n [ F ] ;
+  [155..143]     ?
+      body: O = U [ F ] ; R = ( O [ 0X3 ] ) ; r = # R ; _ = r > 0X0 and { } ; L = K [ 0b111101 ] ( O , _ ) ; ( K [ 11 ] ) ( L , X ) ; ( a ) [ 
+  [155..143]     ?
+      body: ( O ) [ R ] = r ;
+  [155..143]     ?
+      body: r = C [ F ] ;
+  [155..143]     ?
+      body: ( a ) [ S [ F ] ] = ( X [ C [ F ] ] ) ;
+  [155..143]     ?
+      body: for M , I in t do if M >= 0X1 then I [ 0x2 ] = ( I ) ; ( I ) [ 3 ] = ( a [ M ] ) ; I [ 1 ] = ( 0X3 ) ; ( t ) [ M ] = nil ; end ; e
+  [161..143]     ?
+      body: ( a ) [ S [ F ] ] = Z [ z [ F ] ] ;
+  [161..143]     ?
+      body: ( a ) [ w [ F ] ] = a [ z [ F ] ] [ a [ S [ F ] ] ] ;
+  [161..143]     ?
+      body: O = w [ F ] ; E = O + S [ F ] - 0B1 ; a [ O ] ( K [ 0x1e ] ( E , O + 0X1 , a ) ) ; E = ( O - 0B1 ) ;
+  [161..143]     ?
+      body: r = ( a ) ;
+  [161..143]     ?
+      body: r = not r ;
+  [161..143]     ?
+      body: ( a ) [ z [ F ] ] = ( a [ S [ F ] ] * C [ F ] ) ;
+  [164..143]     ?
+      body: a [ z [ F ] ] = ( Y ) ;
+  [164..143]     ?
+      body: _ = S [ F ] ;
+  [164..143]     ?
+      body: ( a ) [ z [ F ] ] = K [ 0X28 ] ;
+  [164..143]     ?
+      body: r = ( S [ F ] ) ; _ = O ; L = 2 ;
+  [164..143]     ?
+      body: _ = ( C [ F ] ) ; r = ( r [ _ ] ) ; ( O ) [ R ] = ( r ) ;
+  [164..143]     ?
+      body: R = S [ F ] ;
+  [173..169]     ?
+      body: ( a ) [ w [ F ] ] = not a [ S [ F ] ] ;
+  [173..169]     ?
+      body: r / = _ ; O [ R ] = r ;
+  [173..170]     ?
+      body: ( a ) [ w [ F ] ] = ( n [ F ] - a [ z [ F ] ] ) ;
+  [173..170]     ?
+      body: R = U [ F ] ; r = a ;
+  [173..170]     ?
+      body: R = S [ F ] ; r = X ;
+  [173..170]     ?
+      body: _ = S [ F ] ; r = ( r [ _ ] ) ;
+  [174..176]     ?
+      body: O = ( O [ R ] ) ;
+  [174..176]     ?
+      body: a [ S [ F ] ] = U [ F ] .. a [ w [ F ] ] ;
+  [174..176]     ?
+      body: ( a ) [ w [ F ] ] = Z [ z [ F ] ] [ a [ S [ F ] ] ] ;
+  [177..176]     ?
+      body: local M = ( z [ F ] ) ; if t then for I , x in t do if not ( I >= M ) then else x [ 0X2 ] = x ; x [ 0X3 ] = ( a [ I ] ) ; ( x ) [ 
+  [177..176]     ?
+      body: 
+  [177..176]     ?
+      body: F = ( S [ F ] ) ;
+  [177..176]     ?
+      body: ( a ) [ w [ F ] ] = S ;
+  [182..179]     ?
+      body: R = ( S [ F ] ) ; r = C [ F ] ;
+  [182..179]     ?
+      body: r = C [ F ] ; O [ R ] = ( r ) ;
+  [182..179]     ?
+      body: for M = S [ F ] , w [ F ] do ( a ) [ M ] = nil ; end ;
+  [183..179]     ?
+      body: r = r [ _ ] ; _ = ( a ) ; L = ( w [ F ] ) ;
+  [184..179]     ?
+      body: _ = ( w [ F ] ) ; r = ( r [ _ ] ) ; _ = ( n [ F ] ) ;
+  [184..179]     ?
+      body: O = O [ R ] ; R = O ;
+  [189..179]     ?
+      body: 
+  [189..179]     ?
+      body: F = ( S [ F ] ) ;
+  [190..179]     ?
+      body: E = ( z [ F ] ) ; ( a ) [ E ] = a [ E ] ( ) ;
+  [190..179]     ?
+      body: L = L [ O ] ; _ = ( _ [ L ] ) ; R [ r ] = ( _ ) ;
+
+--- instruction listing (from capture: n=220, start pc=1) ---
+  pc=1    op=43    ?
+  pc=2    op=106   handler[body not recognized]
+  pc=3    op=106   handler[body not recognized]
+  pc=4    op=106   handler[body not recognized]
+  pc=5    op=106   handler[body not recognized]
+  pc=6    op=106   handler[body not recognized]
+  pc=7    op=106   handler[body not recognized]
+  pc=8    op=43    ?
+  pc=9    op=106   handler[body not recognized]
+  pc=10   op=106   handler[body not recognized]
+  pc=11   op=106   handler[body not recognized]
+  pc=12   op=43    ?
+  pc=13   op=69    ?
+  pc=14   op=29    ?
+  pc=15   op=150   handler[body not recognized]
+  pc=16   op=69    ?
+  pc=17   op=29    ?
+  pc=18   op=106   handler[body not recognized]
+  pc=19   op=150   handler[body not recognized]
+  pc=20   op=29    ?
+  pc=21   op=106   handler[body not recognized]
+  pc=22   op=150   handler[body not recognized]
+  pc=23   op=43    ?
+  pc=24   op=29    ?
+  pc=25   op=106   handler[body not recognized]
+  pc=26   op=106   handler[body not recognized]
+  pc=27   op=43    ?
+  pc=28   op=29    ?
+  pc=29   op=106   handler[body not recognized]
+  pc=30   op=106   handler[body not recognized]
+  pc=31   op=106   handler[body not recognized]
+  pc=32   op=106   handler[body not recognized]
+  pc=33   op=106   handler[body not recognized]
+  pc=34   op=106   handler[body not recognized]
+  pc=35   op=43    ?
+  pc=36   op=29    ?
+  pc=37   op=96    handler[body not recognized]
+  pc=38   op=2     ?
+  pc=39   op=153   handler[body not recognized]
+  pc=40   op=30    ?
+  pc=41   op=152   handler[body not recognized]
+  pc=42   op=150   handler[body not recognized]
+  pc=43   op=29    ?
+  pc=44   op=43    ?
+  pc=45   op=150   handler[body not recognized]
+  pc=46   op=6     ?
+  pc=47   op=40    ?
+  pc=48   op=170   handler[body not recognized]
+  pc=49   op=165   handler[body not recognized]
+  pc=50   op=71    ?
+  pc=51   op=106   handler[body not recognized]
+  pc=52   op=106   handler[body not recognized]
+  pc=53   op=43    ?
+  pc=54   op=43    ?
+  pc=55   op=29    ?
+  pc=56   op=106   handler[body not recognized]
+  pc=57   op=150   handler[body not recognized]
+  pc=58   op=29    ?
+  pc=59   op=150   handler[body not recognized]
+  pc=60   op=43    ?
+  pc=61   op=106   handler[body not recognized]
+  pc=62   op=96    handler[body not recognized]
+  pc=63   op=2     ?
+  pc=64   op=153   handler[body not recognized]
+  pc=65   op=30    ?
+  pc=66   op=152   handler[body not recognized]
+  pc=67   op=106   handler[body not recognized]
+  pc=68   op=106   handler[body not recognized]
+  pc=69   op=43    ?
+  pc=70   op=106   handler[body not recognized]
+  pc=71   op=150   handler[body not recognized]
+  pc=72   op=29    ?
+  pc=73   op=150   handler[body not recognized]
+  pc=74   op=29    ?
+  pc=75   op=150   handler[body not recognized]
+  pc=76   op=69    ?
+  pc=77   op=29    ?
+  pc=78   op=106   handler[body not recognized]
+  pc=79   op=43    ?
+  pc=80   op=185   ?
+  pc=81   op=50    ?
+  pc=82   op=106   handler[body not recognized]
+  pc=83   op=106   handler[body not recognized]
+  pc=84   op=106   handler[body not recognized]
+  pc=85   op=106   handler[body not recognized]
+  pc=86   op=106   handler[body not recognized]
+  pc=87   op=106   handler[body not recognized]
+  pc=88   op=106   handler[body not recognized]
+  pc=89   op=43    ?
+  pc=90   op=106   handler[body not recognized]
+  pc=91   op=96    handler[body not recognized]
+  pc=92   op=2     ?
+  pc=93   op=153   handler[body not recognized]
+  pc=94   op=30    ?
+  pc=95   op=152   handler[body not recognized]
+  pc=96   op=150   handler[body not recognized]
+  pc=97   op=29    ?
+  pc=98   op=43    ?
+  pc=99   op=106   handler[body not recognized]
+  pc=100  op=106   handler[body not recognized]
+  pc=101  op=150   handler[body not recognized]
+  pc=102  op=43    ?
+  pc=103  op=106   handler[body not recognized]
+  pc=104  op=106   handler[body not recognized]
+  pc=105  op=150   handler[body not recognized]
+  pc=106  op=69    ?
+  pc=107  op=29    ?
+  pc=108  op=150   handler[body not recognized]
+  pc=109  op=43    ?
+  pc=110  op=150   handler[body not recognized]
+  pc=111  op=29    ?
+  pc=112  op=106   handler[body not recognized]
+  pc=113  op=106   handler[body not recognized]
+  pc=114  op=106   handler[body not recognized]
+  pc=115  op=43    ?
+  pc=116  op=106   handler[body not recognized]
+  pc=117  op=150   handler[body not recognized]
+  pc=118  op=69    ?
+  pc=119  op=43    ?
+  pc=120  op=150   handler[body not recognized]
+  pc=121  op=69    ?
+  pc=122  op=29    ?
+  pc=123  op=150   handler[body not recognized]
+  pc=124  op=43    ?
+  pc=125  op=139   handler[body not recognized]
+  pc=126  op=33    ?
+  pc=127  op=64    ?
+  pc=128  op=106   handler[body not recognized]
+  pc=129  op=106   handler[body not recognized]
+  pc=130  op=150   handler[body not recognized]
+  pc=131  op=69    ?
+  pc=132  op=29    ?
+  pc=133  op=43    ?
+  pc=134  op=150   handler[body not recognized]
+  pc=135  op=4     ?
+  pc=136  op=32    ?
+  pc=137  op=131   handler[body not recognized]
+  pc=138  op=152   handler[body not recognized]
+  pc=139  op=29    ?
+  pc=140  op=106   handler[body not recognized]
+  pc=141  op=106   handler[body not recognized]
+  pc=142  op=106   handler[body not recognized]
+  pc=143  op=106   handler[body not recognized]
+  pc=144  op=43    ?
+  pc=145  op=29    ?
+  pc=146  op=106   handler[body not recognized]
+  pc=147  op=106   handler[body not recognized]
+  pc=148  op=106   handler[body not recognized]
+  pc=149  op=106   handler[body not recognized]
+  pc=150  op=106   handler[body not recognized]
+  pc=151  op=106   handler[body not recognized]
+  pc=152  op=106   handler[body not recognized]
+  pc=153  op=43    ?
+  pc=154  op=29    ?
+  pc=155  op=96    handler[body not recognized]
+  pc=156  op=2     ?
+  pc=157  op=153   handler[body not recognized]
+  pc=158  op=30    ?
+  pc=159  op=152   handler[body not recognized]
+  pc=160  op=106   handler[body not recognized]
+  pc=161  op=150   handler[body not recognized]
+  pc=162  op=29    ?
+  pc=163  op=106   handler[body not recognized]
+  pc=164  op=106   handler[body not recognized]
+  pc=165  op=106   handler[body not recognized]
+  pc=166  op=150   handler[body not recognized]
+  pc=167  op=29    ?
+  pc=168  op=150   handler[body not recognized]
+  pc=169  op=29    ?
+  pc=170  op=150   handler[body not recognized]
+  pc=171  op=69    ?
+  pc=172  op=29    ?
+  pc=173  op=43    ?
+  pc=174  op=106   handler[body not recognized]
+  pc=175  op=96    handler[body not recognized]
+  pc=176  op=171   handler[body not recognized]
+  pc=177  op=126   handler[body not recognized]
+  pc=178  op=29    ?
+  pc=179  op=106   handler[body not recognized]
+  pc=180  op=150   handler[body not recognized]
+  pc=181  op=29    ?
+  pc=182  op=29    ?
+  pc=183  op=106   handler[body not recognized]
+  pc=184  op=150   handler[body not recognized]
+  pc=185  op=29    ?
+  pc=186  op=43    ?
+  pc=187  op=150   handler[body not recognized]
+  pc=188  op=29    ?
+  pc=189  op=106   handler[body not recognized]
+  pc=190  op=150   handler[body not recognized]
+  pc=191  op=43    ?
+  pc=192  op=106   handler[body not recognized]
+  pc=193  op=150   handler[body not recognized]
+  pc=194  op=69    ?
+  pc=195  op=29    ?
+  pc=196  op=106   handler[body not recognized]
+  pc=197  op=43    ?
+  pc=198  op=106   handler[body not recognized]
+  pc=199  op=96    handler[body not recognized]
+  pc=200  op=2     ?
+  pc=201  op=153   handler[body not recognized]
+  pc=202  op=30    ?
+  pc=203  op=152   handler[body not recognized]
+  pc=204  op=150   handler[body not recognized]
+  pc=205  op=29    ?
+  pc=206  op=106   handler[body not recognized]
+  pc=207  op=154   handler[body not recognized]
+  pc=208  op=29    ?
+  pc=209  op=43    ?
+  pc=210  op=75    ?
+  pc=211  op=106   handler[body not recognized]
+  pc=212  op=150   handler[body not recognized]
+  pc=213  op=29    ?
+  pc=214  op=43    ?
+  pc=215  op=150   handler[body not recognized]
+  pc=216  op=29    ?
+  pc=217  op=106   handler[body not recognized]
+  pc=218  op=106   handler[body not recognized]
+  pc=219  op=106   handler[body not recognized]
+  pc=220  op=43    ?

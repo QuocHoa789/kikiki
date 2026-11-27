@@ -1,0 +1,108 @@
+==============================================================
+LURAPH DEOBFUSCATION REPORT: 6z_7.lua
+==============================================================
+version       : Luraph v14.8
+style         : vm
+file size     : 147,245B
+VM entry      : :?(...)
+VM func fields: 139
+bit32/buffer/coroutine refs: 14/0/2
+number literals: 3,932
+
+--- serialized blobs (1) ---
+  blob[0] level=2 sig='LPH@' encoded=94,200B decoded=75,440B -> high-entropy (encrypted layer)
+
+--- string constants: 94 total (87 application, 7 VM-internal) ---
+  application strings (used by the original script):
+    'bit32'
+    'string'
+    'assert'
+    'traceback'
+    'next'
+    '>i8'
+    'pcall'
+    'sub'
+    'countrz'
+    'find'
+    'tonumber'
+    'linedefined'
+    'gmatch'
+    'writeu32'
+    'rshift'
+    'create'
+    'error'
+    'band'
+    'readu8'
+    'getinfo'
+    'insert'
+    'pi'
+    'pack'
+    'currentline'
+    'rep'
+    'coroutine'
+    'setfenv'
+    'math'
+    'what'
+    'source'
+    'char'
+    'table'
+    'gsub'
+    '__index'
+    '\n\t\t\t\t .@%(/*,.......      ...,,*/(#%&@@.\n\t\t\t (*   ,/(#%%&&@@@@&%((////(((##%###((/**,,.     ,//(&...'
+    'writeu16'
+    'buffer'
+    'format'
+    'concat'
+    'ELZqXzPZy'
+    'lrotate'
+    'lastlinedefined'
+    'type'
+    'number'
+    'info'
+    'slnaf'
+    'getfenv'
+    'close'
+    'getmetatable'
+    '[C]'
+    'bnot'
+    'boolean'
+    'namewhat'
+    'nparams'
+    'floor'
+    'abs'
+    'match'
+    'rrotate'
+    'status'
+    'short_src'
+    'tostring'
+    'len'
+    'running'
+    'select'
+    'rawset'
+    'isvararg'
+    'wrap'
+    'loadstring'
+    'countlz'
+    'yield'
+    'typeof'
+    'isyieldable'
+    'copy'
+    'setmetatable'
+    'xpcall'
+    'rawget'
+    'readu32'
+    'modf'
+    'debug'
+    'unpack'
+    '=[C]'
+    'resume'
+    'lshift'
+    'bxor'
+    'writeu8'
+    'byte'
+    'function'
+
+--- interpretation ---
+  notable strings (services / networking / executors):
+    'loadstring'
+

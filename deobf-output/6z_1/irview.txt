@@ -1,0 +1,179 @@
+==============================================================
+CAPTURED EXECUTION DATA (IR level)
+==============================================================
+
+[arg13] kind=table len=0
+  band
+  extract
+  byteswap
+  bor
+  bnot
+  countrz
+  bxor
+  arshift
+  rshift
+  rrotate
+  replace
+  lshift
+  lrotate
+  btest
+  countlz
+
+[arg16] kind=table len=0
+  T2
+  U2
+  V2
+  W2
+  X2
+  Y2
+  Z2
+  _2
+  a2
+  b2
+  c2
+  D2
+  E2
+  F2
+  G2
+  H2
+  I2
+  J2
+  K2
+  L2
+  M2
+  N2
+  O2
+  P2
+  Q2
+  R2
+  S2
+  NP
+  OP
+  LP
+  MP
+  RP
+  SP
+  PP
+  QP
+  VP
+  WP
+  TP
+  UP
+  ZP
+  -
+
+[arg17] kind=array:mixed len=62
+  [1]
+  [2]
+  [3]
+  [4]
+  [5]
+  [6]
+
+[arg17.6] kind=array:mixed len=16
+  [6]
+  [7]
+  [8]
+  [9]
+  [10]
+  [11]
+  [12]
+  [13]
+  [14]
+  [15]
+  [16]
+  [7]
+  [8]
+  [9]
+  [10]
+  [11]
+  [12]
+  [13]
+
+[arg17.13] kind=array:str len=255
+  [1] '\x01'
+  [2] '\x02'
+  [3] '\x03'
+  [4] '\x04'
+  [5] '\x05'
+  [6] '\x06'
+  [7] '\x07'
+  [8] '\x08'
+  [9] '\t'
+  [10] ''
+  [11] ''
+  [12] ''
+  [13] ''
+  [14] '\x0e'
+  [15] '\x0f'
+  [16] '\x10'
+  [17] '\x11'
+  [18] '\x12'
+  [19] '\x13'
+  [20] '\x14'
+  [21] '\x15'
+  [22] '\x16'
+  [23] '\x17'
+  [24] '\x18'
+  [25] '\x19'
+  [26] '\x1a'
+  [27] '\x1b'
+  [28] ''
+  [29] ''
+  [30] ''
+  [31] '\x1f'
+  [32] ''
+  [33] '!'
+  [34] '"'
+  [35] '#'
+  [36] '$'
+  [37] '%'
+  [38] '&'
+  [39] "'"
+  [40] '('
+  [-1] '(+215'
+  [14]
+  [15]
+  [16]
+
+[arg17.16] kind=empty len=0
+  [18]
+  [19]
+  [20]
+  [21]
+  [22]
+  [23]
+  [24]
+  [25]
+  [26]
+  [27]
+  [28]
+  [29]
+  [30]
+  [31]
+  [32]
+  [33]
+  [34]
+  [35]
+  [36]
+  [37]
+
+[arg17.37] kind=empty len=0
+  [39]
+  [40]
+  [41]
+  [42]
+  -
+
+[arg18] kind=array:num len=0
+  values: 2281:104
+  ^ INTERPRETATION: sparse key->seed map — this is the
+    VM's per-file obfuscation key table (arithmetic
+    bias seeds used by the anti-tamper / constant
+    decryption routines)
+
+[arg19] kind=number len=0
+
+[arg20] kind=function len=0
+
+[arg21] kind=function len=0

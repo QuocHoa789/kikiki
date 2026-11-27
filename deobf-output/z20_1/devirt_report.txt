@@ -1,0 +1,33 @@
+==============================================================
+LURAPH DEOBFUSCATION REPORT: z20_1.lua
+==============================================================
+version       : Luraph v?
+style         : loader
+file size     : 1,127,270B
+VM entry      : :?(...)
+VM func fields: 5
+bit32/buffer/coroutine refs: 0/1/0
+number literals: 15,772
+
+--- serialized blobs (2) ---
+  blob[0] level=1 sig='LPH?' encoded=43,154B decoded=34,520B -> high-entropy (encrypted layer)
+  blob[1] level=3 sig='LPH+' encoded=1,080,054B decoded=864,040B -> high-entropy (encrypted layer)
+
+--- string constants: 12 total (12 application, 0 VM-internal) ---
+  application strings (used by the original script):
+    ';h~J0^'
+    'Sv'
+    'Jw'
+    '{#L'
+    'Z9'
+    '\r!'
+    'Mh'
+    ':b'
+    's=s'
+    '`P['
+    '\r{'
+    '\r{'
+
+--- interpretation ---
+  (no obvious service/network strings recovered)
+
