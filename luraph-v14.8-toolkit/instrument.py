@@ -25,7 +25,6 @@ if "--mode" in sys.argv:
         sys.argv.pop(i)
         sys.argv.pop(i)
 
-
 def instrument(src: str) -> str:
     # find the deserializer tail:  X = TBL[IDX](a, TBL2[IDX2])(args...)
     m = re.search(
@@ -80,13 +79,40 @@ def instrument(src: str) -> str:
             break
 
     dump_call = f";LPH_DUMP({','.join(names)})"
-    if MODE == "instr":
+    if MODE in ("instr", "trees"):
         # dispatch-loop capture mode: leave the interpreter invocation
-        # INTACT so the Real VM runs; LPH_INSTR fires at the first opcode
-        # fetch, dumps the materialized instruction array, then aborts
+        # INTACT so the Real VM runs. For "instr": single-tree capture at
+        # the first opcode fetch. For "trees": hook EVERY `local op=(Y[F])`
+        # fetch (one per prototype) so all dispatch trees get dumped.
         instrumented = src
         # extract the SoA column names from the dispatch loop: every
         # `COL[F]` access (F = the PC variable) is an instruction column
+        if MODE == "trees":
+            # hook every opcode fetch into a frequently-fetched array:
+            # count fetches per array name, hook those with >= 3 (dispatch
+            # arrays); once-per-table dump in LPH_INSTR dedupes
+            fetch_pat = re.compile(
+                r"(local\s+)?(\w+)\s*=\s*\(\s*(\w+)\[(\w+)\]\s*\)\s*;")
+            matches = list(fetch_pat.finditer(instrumented))
+            from collections import Counter
+            arr_counts = Counter(m.group(3) for m in matches)
+            dispatch_arrs = {a for a, c in arr_counts.items() if c >= 3}
+            hooked = 0
+            out = []
+            prev = 0
+            for m in matches:
+                arr, pc = m.group(3), m.group(4)
+                out.append(instrumented[prev:m.start()])
+                if arr in dispatch_arrs:
+                    out.append(f"LPH_INSTR({arr},{pc});")
+                    hooked += 1
+                out.append(m.group(0))
+                prev = m.end()
+            out.append(instrumented[prev:])
+            instrumented = "".join(out)
+            print(f"hooked {hooked} opcode fetches "
+                  f"(dispatch arrays: {sorted(dispatch_arrs)})", file=sys.stderr)
+            return instrumented
         dm = re.search(r"repeat\s+local\s+(\w+)\s*=\s*\(\s*(\w+)\[(\w+)\]\s*\)\s*;",
                        instrumented)
         if dm:
