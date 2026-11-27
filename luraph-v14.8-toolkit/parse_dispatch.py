@@ -257,7 +257,7 @@ def walk(node, path, out):
         return
     if node.kind == "leaf":
         text = " ".join(t[1] for t in (node.body or []))
-        out.append((list(path), text[:400]))
+        out.append((list(path), text))
         return
     if node.cond:
         for c in node.cond:
