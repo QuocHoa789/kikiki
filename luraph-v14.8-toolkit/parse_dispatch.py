@@ -206,7 +206,8 @@ class Parser:
         return leaf
 
     def parse_cond(self):
-        """Parse conditions on g: g>=X / g<X / g~=X / g==X possibly combined."""
+        """Parse conditions on g: g>=X / g<X / g~=X / g==X possibly combined.
+        Records (op, value, is_g) — runtime conditions get is_g=False."""
         conds = []
         while True:
             t = self.peek()
@@ -220,7 +221,7 @@ class Parser:
                 val = self.next()
                 v = parse_value(val)
                 if v is not None:
-                    conds.append((op[1], v))
+                    conds.append((op[1], v, True))
                 continue
             if t[0] == "name" and t[1] == "not":
                 self.next()
@@ -236,7 +237,7 @@ class Parser:
                     if v is not None:
                         inv = {"<": ">=", ">": "<=", ">=": "<", "<=": ">",
                                "~=": "==", "==": "~="}
-                        conds.append((inv.get(op[1], op[1]), v))
+                        conds.append((inv.get(op[1], op[1]), v, True))
                     continue
                 # runtime condition — skip balanced parens
                 depth = 1
@@ -246,39 +247,48 @@ class Parser:
                         depth += 1
                     elif t4[1] == ")":
                         depth -= 1
+                conds.append(("runtime", None, False))
                 continue
             # anything else in the condition — skip token
             self.next()
         return conds
 
 
-def walk(node, path, out):
-    if node is None:
-        return
-    if node.kind == "leaf":
-        text = " ".join(t[1] for t in (node.body or []))
-        out.append((list(path), text))
-        return
+def resolve_leaves(tree, op):
+    """Walk the tree with a concrete opcode value: g-conditions are
+    evaluated, runtime conditions branch BOTH ways (dispatch depends on
+    runtime state too). Returns matching leaf bodies."""
     invert = {"<": ">=", ">=": "<", ">": "<=", "<=": ">",
               "==": "~=", "~=": "=="}
-    if node.cond:
-        yes_conds = [c for c in node.cond
-                     if isinstance(c, tuple) and len(c) == 2]
-        for c in yes_conds:
-            path.append(c)
-    if node.yes is not None:
-        walk(node.yes, path, out)
-    if node.cond:
-        for c in yes_conds:
-            path.pop()
-        # the no-branch takes the inverted constraints
-        for op, v in yes_conds:
-            path.append((invert.get(op, op), v))
-    if node.no is not None:
-        walk(node.no, path, out)
-    if node.cond:
-        for op, v in yes_conds:
-            path.pop()
+    ops = {"<": lambda g, v: g < v, ">=": lambda g, v: g >= v,
+           ">": lambda g, v: g > v, "<=": lambda g, v: g <= v,
+           "==": lambda g, v: g == v, "~=": lambda g, v: g != v}
+    matches = []
+
+    def walk(node, path):
+        if node is None or len(matches) > 8:
+            return
+        if node.kind == "leaf":
+            text = " ".join(t[1] for t in (node.body or []))
+            matches.append((list(path), text))
+            return
+        conds = [c for c in (node.cond or []) if isinstance(c, tuple)]
+        g_conds = [c for c in conds if len(c) == 3 and c[2]]
+        # evaluate g-conditions
+        all_yes = all(ops[o](op, v) for o, v, _ in g_conds)
+        all_no = all(ops[invert[o]](op, v) for o, v, _ in g_conds)
+        path_yes = path + [f"g{o}{v}" for o, v, _ in g_conds]
+        if g_conds and all_yes:
+            walk(node.yes, path_yes)
+        elif g_conds and all_no:
+            walk(node.no, path)
+        else:
+            # mixed or runtime-only: both branches
+            walk(node.yes, path_yes)
+            walk(node.no, path)
+
+    walk(tree, [])
+    return matches
 
 
 def main():
@@ -286,14 +296,19 @@ def main():
     toks = tokenize(src)
     p = Parser(toks)
     tree = p.parse_if_chain()
+    # collect all leaves by resolving with every opcode in range
     out = []
-    walk(tree, [], out)
-    print(f"leaves (handlers): {len(out)}")
-    lines = []
-    for path, text in out:
-        rng = " & ".join(f"g{op}{v}" for op, v in path)
-        lines.append(f"OPCODE {rng}\n  {text}")
-    text = "\n".join(lines)
+    seen = set()
+    for op in range(0, 256):
+        for path, text in resolve_leaves(tree, op):
+            key = text[:80]
+            if key in seen:
+                continue
+            seen.add(key)
+            rng = " & ".join(path)
+            out.append(f"OPCODE {op}: {rng}\n  {text[:200]}")
+    print(f"handlers (unique bodies): {len(out)}")
+    text = "\n".join(out)
     if len(sys.argv) > 3 and sys.argv[2] == "-o":
         open(sys.argv[3], "w", encoding="utf-8").write(text + "\n")
         print("->", sys.argv[3])
