@@ -259,18 +259,26 @@ def walk(node, path, out):
         text = " ".join(t[1] for t in (node.body or []))
         out.append((list(path), text))
         return
+    invert = {"<": ">=", ">=": "<", ">": "<=", "<=": ">",
+              "==": "~=", "~=": "=="}
     if node.cond:
-        for c in node.cond:
-            if isinstance(c, tuple) and len(c) == 2:
-                path.append(c)
+        yes_conds = [c for c in node.cond
+                     if isinstance(c, tuple) and len(c) == 2]
+        for c in yes_conds:
+            path.append(c)
     if node.yes is not None:
         walk(node.yes, path, out)
+    if node.cond:
+        for c in yes_conds:
+            path.pop()
+        # the no-branch takes the inverted constraints
+        for op, v in yes_conds:
+            path.append((invert.get(op, op), v))
     if node.no is not None:
         walk(node.no, path, out)
     if node.cond:
-        for c in node.cond:
-            if isinstance(c, tuple) and len(c) == 2:
-                path.pop()
+        for op, v in yes_conds:
+            path.pop()
 
 
 def main():

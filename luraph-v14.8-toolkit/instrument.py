@@ -85,23 +85,50 @@ def instrument(src: str) -> str:
         # INTACT so the Real VM runs; LPH_INSTR fires at the first opcode
         # fetch, dumps the materialized instruction array, then aborts
         instrumented = src
-    else:
-        instrumented = src[:start] + dump_call + src[end:]
-
-    if MODE == "instr":
-        # inject into the dispatch loop: `repeat local op=(ARR[pc]);` —
-        # the opcode fetch. LPH_INSTR dumps the opcodes array once, then
-        # raises to unwind cleanly (the sandbox catches it).
-        dm = re.search(r'repeat\s+local\s+(\w+)\s*=\s*\(\s*(\w+)\[(\w+)\]\s*\)\s*;',
+        # extract the SoA column names from the dispatch loop: every
+        # `COL[F]` access (F = the PC variable) is an instruction column
+        dm = re.search(r"repeat\s+local\s+(\w+)\s*=\s*\(\s*(\w+)\[(\w+)\]\s*\)\s*;",
                        instrumented)
         if dm:
-            fetch = dm.group(0)
-            hook = f"repeat LPH_INSTR({dm.group(2)},{dm.group(3)});{fetch[7:]}"
-            instrumented = instrumented[:dm.start()] + hook + \
-                instrumented[dm.end():]
-            print(f"dispatch loop hooked at {dm.start()}: "
-                  f"op={dm.group(1)} arr={dm.group(2)} pc={dm.group(3)}",
-                  file=sys.stderr)
+            pc_var = dm.group(3)
+            loop_start = dm.start()
+            # find the loop end (depth-tracked) to scan for column accesses
+            j = loop_start + 7
+            depth = 1
+            n = len(instrumented)
+            loop_end = n
+            while j < n:
+                c = instrumented[j]
+                if c.isalpha() or c == "_":
+                    km = re.match(r"[A-Za-z_]\w*", instrumented[j:])
+                    kw = km.group(0)
+                    if kw in ("repeat", "function"):
+                        depth += 1
+                    elif kw == "until":
+                        depth -= 1
+                        if depth == 0:
+                            loop_end = j
+                            break
+                    elif kw in ("if", "while", "for"):
+                        depth += 1
+                    elif kw == "end":
+                        depth -= 1
+                    j += len(kw)
+                    continue
+                j += 1
+            loop_text = instrumented[loop_start:loop_end]
+            cols = sorted(set(re.findall(r"(\w+)\[" + re.escape(pc_var) + r"\]",
+                                         loop_text)))
+            cols = [c for c in cols if c != pc_var]
+            op_arr = dm.group(2)
+            cols_tbl = "{" + f"{op_arr}={op_arr}" + \
+                "".join(f",{c}={c}" for c in cols) + "}"
+            hook = (f"repeat LPH_INSTR({cols_tbl},{pc_var});"
+                    f"local {dm.group(1)}=({op_arr}[{pc_var}]);")
+            instrumented = instrumented[:loop_start] + hook + \
+                instrumented[loop_start + len(dm.group(0)):]
+            print(f"dispatch loop hooked: op={dm.group(1)} arr={op_arr} "
+                  f"pc={pc_var} columns={cols}", file=sys.stderr)
         else:
             print("dispatch loop NOT found", file=sys.stderr)
         return instrumented

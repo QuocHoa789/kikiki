@@ -363,22 +363,42 @@ end
 -- expose the dumper to the protected script's environment
 env.LPH_DUMP = LPH_DUMP
 
--- instruction-array capture: called at the first opcode fetch in the VM's
--- dispatch loop. Dumps the materialized opcodes array once, then raises to
--- unwind cleanly (the sandbox harness catches the error).
-LPH_INSTR = function(arr, pc)
-    if INSTR_CAPTURED then return end
-    INSTR_CAPTURED = true
-    local n = 0
-    for _ in pairs(arr) do n = n + 1 end
-    print("=== LPH_INSTR_BEGIN n=" .. tostring(n) .. " pc=" .. tostring(pc) .. " ===")
-    local parts = {}
-    local cnt = 0
-    for i = 1, n do
-        cnt = cnt + 1
-        parts[cnt] = tostring(arr[i])
+-- instruction capture: called at EVERY opcode fetch in the VM's dispatch
+-- loop. Accumulates per-instruction rows (op + all SoA columns at the
+-- current PC). At the fetch limit, prints the full materialized
+-- instruction table and unwinds cleanly.
+INSTR_ROWS = {}
+INSTR_COUNT = 0
+INSTR_LIMIT = 400
+
+LPH_INSTR = function(cols, pc)
+    if INSTR_COUNT < INSTR_LIMIT then
+        INSTR_COUNT = INSTR_COUNT + 1
+        local row = {}
+        for name, arr in pairs(cols) do
+            row[#row + 1] = name .. "=" .. tostring(arr[pc])
+        end
+        table.insert(INSTR_ROWS, "pc=" .. tostring(pc) .. " " ..
+            table.concat(row, " "))
+        return  -- keep running: capture as many instructions as possible
     end
-    print(table.concat(parts, " "))
+    -- limit reached: print everything captured
+    print("=== LPH_INSTR_BEGIN fetches=" .. tostring(INSTR_COUNT) ..
+        " last_pc=" .. tostring(pc) .. " ===")
+    print(table.concat(INSTR_ROWS, "\n"))
+    -- also dump the full SoA columns (the materialized instruction table)
+    for name, arr in pairs(cols) do
+        local parts = {}
+        local cnt = 0
+        local n = 0
+        for _ in pairs(arr) do n = n + 1 end
+        for i = 1, n do
+            cnt = cnt + 1
+            parts[cnt] = tostring(arr[i])
+        end
+        print("=== COL " .. name .. " n=" .. tostring(n) .. " ===")
+        print(table.concat(parts, " "))
+    end
     print("=== LPH_INSTR_END ===")
     error("LPH_CAPTURE_DONE")
 end
