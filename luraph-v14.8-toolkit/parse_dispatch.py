@@ -225,28 +225,34 @@ class Parser:
                 continue
             if t[0] == "name" and t[1] == "not":
                 self.next()
-                self.expect("(")
                 t3 = self.peek()
-                if t3 and t3[0] == "name" and t3[1] == self.opname:
-                    # not(g<X) -> g>=X
-                    self.next()  # g
-                    op = self.next()
-                    val = self.next()
-                    v = parse_value(val)
-                    self.expect(")")
-                    if v is not None:
-                        inv = {"<": ">=", ">": "<=", ">=": "<", "<=": ">",
-                               "~=": "==", "==": "~="}
-                        conds.append((inv.get(op[1], op[1]), v, True))
+                if t3 and t3[1] == "(":
+                    self.expect("(")
+                    if t3 and t3[0] == "name" and t3[1] == self.opname:
+                        # not(g<X) -> g>=X
+                        self.next()  # g
+                        op = self.next()
+                        val = self.next()
+                        v = parse_value(val)
+                        self.expect(")")
+                        if v is not None:
+                            inv = {"<": ">=", ">": "<=", ">=": "<", "<=": ">",
+                                   "~=": "==", "==": "~="}
+                            conds.append((inv.get(op[1], op[1]), v, True))
+                        continue
+                    # runtime condition — skip balanced parens
+                    depth = 1
+                    while depth > 0 and self.pos < len(self.toks):
+                        t4 = self.next()
+                        if t4[1] == "(":
+                            depth += 1
+                        elif t4[1] == ")":
+                            depth -= 1
+                    conds.append(("runtime", None, False))
                     continue
-                # runtime condition — skip balanced parens
-                depth = 1
-                while depth > 0 and self.pos < len(self.toks):
-                    t4 = self.next()
-                    if t4[1] == "(":
-                        depth += 1
-                    elif t4[1] == ")":
-                        depth -= 1
+                # `not VAR` without parens: runtime condition
+                if t3 and t3[0] == "name":
+                    self.next()
                 conds.append(("runtime", None, False))
                 continue
             # anything else in the condition — skip token

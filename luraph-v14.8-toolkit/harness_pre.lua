@@ -370,8 +370,38 @@ env.LPH_DUMP = LPH_DUMP
 INSTR_ROWS = {}
 INSTR_COUNT = 0
 INSTR_LIMIT = 400
+INSTR_TREES = {}
+TREE_COUNT = 0
 
-LPH_INSTR = function(cols, pc)
+LPH_INSTR = function(a, b, cols, pc)
+    -- mode "trees": a = the opcode array, b = PC; dump each new tree once
+    if cols == nil and type(a) == "table" then
+        local key = tostring(a)
+        INSTR_COUNT = INSTR_COUNT + 1
+        if not INSTR_TREES[key] then
+            INSTR_TREES[key] = true
+            TREE_COUNT = TREE_COUNT + 1
+            local n = 0
+            for _ in pairs(a) do n = n + 1 end
+            print("=== LPH_TREE_BEGIN id=" .. key .. " n=" ..
+                tostring(n) .. " pc=" .. tostring(b) .. " ===")
+            local parts = {}
+            local cnt = 0
+            for i = 1, n do
+                cnt = cnt + 1
+                parts[cnt] = tostring(a[i])
+            end
+            print(table.concat(parts, " "))
+            print("=== LPH_TREE_END ===")
+        end
+        if INSTR_COUNT >= 4000 then
+            print("=== TREE_CAPTURE_DONE trees=" .. tostring(TREE_COUNT) ..
+                " ===")
+            error("LPH_CAPTURE_DONE")
+        end
+        return
+    end
+    -- mode "instr": per-fetch rows with SoA columns
     if INSTR_COUNT < INSTR_LIMIT then
         INSTR_COUNT = INSTR_COUNT + 1
         local row = {}
