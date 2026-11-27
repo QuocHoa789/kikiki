@@ -77,6 +77,41 @@ python3 luraph_deobf.py all protected.lua
 range-coder/LZ77 decompressor, including the 11-bit adaptive probability model bit
 decoder, bit trees, matched-literal decoding, and the 12-state match state machine).
 
+## Luau sandbox (dynamic analysis)
+
+`instrument.py` + `build_combined.py` + `harness_pre.lua`/`harness_post.lua` run a
+protected file inside the Luau CLI outside Roblox:
+
+```bash
+# instrument (hook deserializer / dispatch loop) then build + run
+python3 instrument.py protected.lua instr.lua --mode trees   # ir | instr | trees
+python3 build_combined.py instr.lua combined.lua
+luau combined.lua -a
+
+# with the full Roblox API stub (apiroblox.luau): the VM passes executor
+# checks and the actual payload body runs (event loops keep it alive —
+# use timeout)
+python3 build_combined.py instr.lua combined.lua --api
+
+# additionally trace every API call the payload makes (envlog.luau)
+python3 build_combined.py instr.lua combined.lua --api --envlog
+```
+
+* `apiroblox.luau` — standalone Roblox environment stub: game/GetService for all
+  common services, Instance.new with auto-signal properties, Enum, task,
+  Vector3/Vector2/CFrame/Color3/UDim2/TweenInfo (and other constructors as
+  `.new`-style tables), getgenv/getrenv (return the stub env), executor-compat
+  functions (hookfunction, cloneref, request, readfile/writefile, ...).
+  Verified standalone with `luau test_api.lua` (all API tests pass).
+* `envlog.luau` — environment tracer: wraps an env table so every global read,
+  write and function call is logged (`path read -> value`, `path(args)`).
+  Use standalone or via `build_combined.py --envlog`.
+* Known limitations: some samples (z20_1, z20_2, z20_4, 6z_3, 6z_6, 6z_9) hit
+  a VM dispatch variant the harness cannot execute ("attempt to index nil
+  with 'new'"); payloads waiting on real Roblox events (Heartbeat, WaitForChild)
+  run forever under `--api` — that is expected and shows the stub got them past
+  all executor/anti-tamper checks.
+
 ## Requirements
 
 Python 3.8+ (tested on 3.14). No third-party packages.
